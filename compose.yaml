@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: file-upload-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: file_uploads
+      POSTGRES_USER: file_upload_user
+      POSTGRES_PASSWORD: file_upload_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    container_name: file-upload-api
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/file_uploads
+      SPRING_DATASOURCE_USERNAME: file_upload_user
+      SPRING_DATASOURCE_PASSWORD: file_upload_password
+      APP_STORAGE_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
